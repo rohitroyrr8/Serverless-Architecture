@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  ReadCapacityUnits:
+    Description: Provisioned read throughput
+    Type: Number
+    Default: '2'
+    MinValue: '1'
+    MaxValue: '5'
+    ConstraintDescription: must be between 1 and 5
+  WriteCapacityUnits:
+    Description: Provisioned write throughput
+    Type: Number
+    Default: '2'
+    MinValue: '1'
+    MaxValue: '5'
+    ConstraintDescription: must be between 1 and 5
+Resources:
+  helloworldpython3:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.6
+      CodeUri: s3://sam-projects-base/1d9e76b0fdc65531d9f70b51e8725599
+      Description: A starter AWS Lambda function.
+      MemorySize: 128
+      Timeout: 3
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: myDynamoDBTable
+          REGION_NAME:
+            Ref: AWS::Region
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: myDynamoDBTable
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: GET
+  myDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: ArtistId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ArtistId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+Outputs:
+  TableName:
+    Value:
+      Ref: myDynamoDBTable
+    Description: Table name of the newly created DynamoDB table
